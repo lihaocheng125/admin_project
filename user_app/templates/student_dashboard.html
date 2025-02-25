@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>学生面板</title>
+    <!-- 引入 jQuery 库 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>学生面板</h1>
+    <div style="width: 33%; float: left; border-right: 1px solid black;">
+        <p>账号: {{ request.user.username }}</p>
+        <!-- 添加姓名输入框 -->
+        <p>姓名: <input type="text" id="name-input" value="{{ request.user.name }}"></p>
+        <!-- 添加保存按钮 -->
+        <button id="save-name-button">保存</button>
+    </div>
+    <div style="width: 66%; float: right;">
+        <h2>我的项目</h2>
+        <a href="{% url 'upload_project' %}">+</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>项目名称</th>
+                    <th>项目</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in user_projects %}
+                    <tr>
+                        <td>{{ project.project_name }}</td>
+                        <td><a href="{{ project.project_file.url }}">下载</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+<script>
+        $(document).ready(function () {
+            // 保存姓名按钮点击事件
+            $('#save-name-button').click(function () {
+                var name = $('#name-input').val();
+                // 发送AJAX请求保存姓名
+                $.ajax({
+                    url: '{% url "save_student_name" %}',
+                    method: 'POST',
+                    data: {
+                        'name': name,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert('姓名保存成功');
+                        } else {
+                            alert('姓名保存失败');
+                        }
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

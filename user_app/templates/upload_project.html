@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>上传项目</title>
+</head>
+<body>
+    <h1>上传项目</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="project_name">项目名称:</label>
+        <input type="text" id="project_name" name="project_name" required><br>
+        <label for="project_file">项目文件:</label>
+        <input type="file" id="project_file" name="project_file" required><br>
+        <button type="submit">上传</button>
+    </form>
+</body>
+</html>

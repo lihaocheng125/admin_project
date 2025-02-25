@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>管理员面板</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        #filter-section {
+            margin-bottom: 20px;
+        }
+
+        #filter-section label {
+            margin-right: 5px;
+        }
+
+        #filter-section input,
+        #filter-section button {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>管理员面板</h1>
+    <h2>被管理人员信息</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>姓名</th>
+                <th>账号</th>
+                <th>项目数</th>
+                <th>项目名称</th>
+                <th>项目</th>
+                <th>登录时间</th>
+                <th>时长</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ student.name }}</td>
+                <td>{{ student.username }}</td>
+                <td>{{ student.project_set.count }}</td>
+                <td>
+                    {% for project in student.project_set.all %}
+                    {{ project.project_name }}<br>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for project in student.project_set.all %}
+                    <a href="{{ project.project_file.url }}">下载</a><br>
+                    {% endfor %}
+                </td>
+                <td>{{ student.last_login_time }}</td>
+                <td>{{ student.login_duration }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>被管理人员个数统计</h2>
+    <div id="filter-section">
+        <label for="start-date">开始日期:</label>
+        <input type="date" id="start-date">
+        <label for="end-date">结束日期:</label>
+        <input type="date" id="end-date">
+        <button id="filter-button">筛选</button>
+    </div>
+    <canvas id="countChart"></canvas>
+
+    <script>
+        $(document).ready(function () {
+            var chartData = {
+                labels: [],
+                datasets: [{
+                    label: '人数',
+                    data: [],
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            };
+
+            var ctx = document.getElementById('countChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    scales: {
+                        x: {
+                            type: 'category',
+                            title: {
+                                display: true,
+                                text: '日期'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '人数'
+                            }
+                        }
+                    }
+                }
+            });
+
+            $('#filter-button').click(function () {
+                var startDate = $('#start-date').val();
+                var endDate = $('#end-date').val();
+                $.ajax({
+                    url: '{% url "admin_dashboard" %}',
+                    method: 'GET',
+                    data: {
+                        'start_date': startDate,
+                        'end_date': endDate
+                    },
+                    success: function (response) {
+                        chartData.labels = response.labels;
+                        chartData.datasets[0].data = response.data;
+                        myChart.update();
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
